@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+    environment {
+        IMAGE_NAME = "nitinsri/devops-project"
+    }
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/NITINSRIGANESH/project.git'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def commitSHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    sh "docker build -t ${IMAGE_NAME}:${commitSHA} -t ${IMAGE_NAME}:latest ."
+                }
+            }
+        }
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([string(credentialsId: 'docker-hub-password', variable: 'DOCKER_PASSWORD')]) {
+                    sh 'echo $DOCKER_PASSWORD | docker login -u nitinsri --password-stdin'
+                }
+            }
+        }
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    def commitSHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    sh "docker push ${IMAGE_NAME}:${commitSHA}"
+                    sh "docker push ${IMAGE_NAME}:latest"
+                }
+            }
+        }
+        stage('Cleanup') {
+            steps {
+                sh "docker rmi -f ${IMAGE_NAME}:latest || true"
+            }
+        }
+    }
+    post {
+        success {
+            echo "✅ Build and push completed successfully!"
+        }
+        failure {
+            echo "❌ Build failed! Check logs for details."
+        }
+    }
+}
