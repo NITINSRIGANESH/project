@@ -10,10 +10,10 @@ docker build -t $DOCKER_USERNAME/$IMAGE_NAME:$TAG .
 
 # Login to Docker Hub
 echo "Enter Docker Hub Password:"
-docker login -u "$DOCKER_USERNAME"
+docker login -u "$DOCKER_USERNAME" -p dckr_pat_gP-_Bl3KT9YS13fsl7HFiWutNoo
 
 # Push Docker Image to Docker Hub
 docker push $DOCKER_USERNAME/$IMAGE_NAME:$TAG
 
-# Run Docker Container
-docker run -d -p 80:80 --name my-running-app $DOCKER_USERNAME/$IMAGE_NAME:$TAG
+
+
